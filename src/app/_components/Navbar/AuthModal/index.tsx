@@ -20,11 +20,14 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Avatar } from "@nextui-org/react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { customAxios } from "@/utils/axios";
 
 export const AuthModal = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const [selected, setSelected] = useState<string | number>("login");
+  const router = useRouter();
 
   const signInFormik = useFormik({
     initialValues: {
@@ -35,8 +38,17 @@ export const AuthModal = () => {
       email: Yup.string().email("Invalid Email").required("Required"),
       password: Yup.string().min(6, "At least 6 digits").required("Required"),
     }),
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       console.log(values);
+      const response = await customAxios.post(
+        `${process.env.NEXT_PUBLIC_API}/auth/signin`,
+        values
+      );
+      console.log(response);
+      console.log(response.status);
+      if (response.role === 1) {
+        router.push("/management/");
+      }
     },
   });
 
@@ -58,8 +70,13 @@ export const AuthModal = () => {
         .oneOf([Yup.ref("password"), ""], "Passwords must match" as const)
         .required("Required"),
     }),
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       console.log(values);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API}auth/signin`,
+        JSON.stringify(values)
+      );
+      console.log(response.data);
     },
   });
 
