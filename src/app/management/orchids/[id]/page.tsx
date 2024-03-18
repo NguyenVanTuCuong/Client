@@ -7,17 +7,6 @@ import { useRouter } from "next/router";
 
 export default function App() {
   const router = useRouter();
-
-  async (id) => {
-    try {
-      const response = await customAxios.get(`${process.env.NEXT_PUBLIC_API}/orchids/${id}`);
-      // Handle response data
-      console.log(response);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-    },
-}
   return (
     <Card>
       <CardBody>

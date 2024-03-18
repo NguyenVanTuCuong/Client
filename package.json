@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@metamask/sdk-react": "^0.17.2",
     "@nextui-org/react": "^2.2.10",
     "axios": "^1.6.7",
     "formik": "^2.4.5",

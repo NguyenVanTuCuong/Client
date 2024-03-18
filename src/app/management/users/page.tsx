@@ -161,7 +161,7 @@ const users = () => {
           loadingState={loadingState}
         >
           {(item) => (
-            <TableRow key={item?.name}>
+            <TableRow key={(item as any)?.name}>
               {(columnKey) => (
                 <TableCell>{getKeyValue(item, columnKey)}</TableCell>
               )}

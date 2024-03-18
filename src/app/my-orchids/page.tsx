@@ -162,7 +162,7 @@ const myOrchids = () => {
         </Card>
       ) : (
         <div className="gap-2 grid grid-cols-2 sm:grid-cols-4">
-          {swr.data?.results.map((item, index) => (
+          {swr.data?.results.map((item: any, index: number) => (
             <Card
               shadow="sm"
               key={index}

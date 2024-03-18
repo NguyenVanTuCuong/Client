@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   Navbar as NextUINavbar,
   NavbarBrand,
@@ -9,8 +9,17 @@ import {
   Switch,
 } from "@nextui-org/react";
 import { AuthModal } from "./AuthModal";
+import { AuthenticatedSelect } from "./AuthenticatedSelect";
+import { RootContext } from "@/app/_hooks/RootProvider";
+import { useRouter } from "next/navigation";
 
 export const Navbar = () => {
+  const { swrs }  = useContext(RootContext)!
+  const { profileSwr }  = swrs
+  const { data }  = profileSwr
+
+  const router = useRouter()
+
   return (
     <NextUINavbar>
       <NavbarBrand>
@@ -23,8 +32,8 @@ export const Navbar = () => {
           </Link>
         </NavbarItem>
         <NavbarItem isActive>
-          <Link href="#" aria-current="page">
-            Users
+          <Link onPress={() => router.push("nfts")} aria-current="page">
+            NFTs
           </Link>
         </NavbarItem>
         <NavbarItem>
@@ -35,7 +44,9 @@ export const Navbar = () => {
       </NavbarContent>
       <NavbarContent justify="end">
         <NavbarItem className="hidden lg:flex">
-          <AuthModal />
+          {
+            data ? <AuthenticatedSelect /> : <AuthModal />
+          }            
         </NavbarItem>
       </NavbarContent>
     </NextUINavbar>
