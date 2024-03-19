@@ -18,6 +18,10 @@ export class AuctionContract {
         return await this.contract.methods._isTerminated().call()
     }
 
+    async owner() {
+        return await this.contract.methods.owner().call()
+    }
+
     async initialAmount() {
         return await this.contract.methods._initialAmount().call()
     }
@@ -36,5 +40,13 @@ export class AuctionContract {
 
     async bid(amount: BigInt) {
         return await this.contract.methods.bid(amount).send({ from: this.account, value: amount.toString(), gas: GAS_LIMIT, gasPrice: GAS_PRICE})
+    }
+
+    async endAuction() {
+        await this.contract.methods.endAuction().send({ from: this.account, gas: GAS_LIMIT, gasPrice: GAS_PRICE})
+    }
+
+    async getAllBids() {
+        return await this.contract.methods.getAllBids().call()
     }
 }

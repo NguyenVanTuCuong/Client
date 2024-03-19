@@ -19,6 +19,7 @@ import {
   TableRow,
   getKeyValue,
 } from "@nextui-org/react";
+import { v4 as uuidv4 } from "uuid"
 import Web3, { WebSocketProvider } from "web3";
 import { HammerIcon } from "lucide-react";
 import { BidModal } from "./BidModal";
@@ -31,47 +32,45 @@ const Page = () => {
 
   const { provider, account } = useSDK();
 
-  const rows = [
-    {
-      key: "1",
-      name: "Tony Reichert",
-      role: "CEO",
-      status: "Active",
-    },
-    {
-      key: "2",
-      name: "Zoey Lang",
-      role: "Technical Lead",
-      status: "Paused",
-    },
-    {
-      key: "3",
-      name: "Jane Fisher",
-      role: "Senior Developer",
-      status: "Active",
-    },
-    {
-      key: "4",
-      name: "William Howard",
-      role: "Community Manager",
-      status: "Vacation",
-    },
-  ];
+  const [ isOwned, setIsOwned ] = useState(false);
 
   const columns = [
     {
-      key: "name",
-      label: "NAME",
+      key: "bidder",
+      label: "BIDDER",
     },
     {
-      key: "role",
-      label: "ROLE",
+      key: "amount",
+      label: "AMOUNT",
     },
     {
-      key: "status",
-      label: "STATUS",
+      key: "timestamp",
+      label: "TIMESTAMP",
     },
   ];
+
+  interface Bid {
+        bidder: string;
+        amount: BigInt;
+        timestamp: BigInt;
+  }
+
+  const [bids, setBids] = useState<Array<Bid>>([])
+
+  useEffect(() => {
+    if (!account) return;
+    const intervalId = setInterval(async () => {
+        const contract = new AuctionContract(address, provider, account);
+        const bids = await contract.getAllBids()
+        const _mapped = bids.map(({amount, bidder, timestamp}) => ({
+            bidder,
+            amount: BigInt(amount),
+            timestamp: BigInt(timestamp)
+        }))
+        setBids(_mapped)
+    }, 2000);
+    return () => clearInterval(intervalId);
+  }, [account])
 
   useEffect(() => {
     if (!account) return;
@@ -80,6 +79,9 @@ const Page = () => {
       const tokenId = Number(await contract.tokenId());
       const isTerminated = await contract.isTerminated();
       const initialAmount = await contract.initialAmount();
+      const owner = await contract.owner();
+      console.log(owner)
+      if (Web3.utils.toChecksumAddress(owner) === Web3.utils.toChecksumAddress(account)) setIsOwned(true)
       const _initialAmount =
         Number((BigInt(initialAmount) * BigInt(100000)) / BigInt(10e17)) /
         100000;
@@ -101,29 +103,6 @@ const Page = () => {
     handleEffect();
   }, [account]);
 
-  useEffect(() => {
-    const handleEffect = async () => {
-      const provider = new WebSocketProvider(
-        "wss://public-en-baobab.klaytn.net/ws"
-      );
-      const web3 = new Web3(provider);
-      const lastBlock = await web3.eth.getBlockNumber();
-      web3.eth
-        .getPastLogs({
-          address,
-          fromBlock: lastBlock - BigInt(100000),
-          toBlock: "latest",
-        })
-        .then((logs) => {
-          console.log(logs);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    };
-    handleEffect();
-  }, []);
-
   return (
     <div className="max-w-[1024px] m-auto gap-12 grid grid-cols-3 w-full mt-6">
       <div>
@@ -138,7 +117,20 @@ const Page = () => {
         <div> Current Price: {auction?.currentAmount} KLAY </div>
         <Spacer y={4} />
         <BidModal address={address} />
+        <Spacer y={2} />
+        {
+            isOwned ? (
+                <Button fullWidth onPress={() => {
+                    async () => {
+                        const contract = new AuctionContract(address, provider, account);
+                        await contract.endAuction()
+                    }
+                }}> End auction </Button>
+            ) : null
+        }
+       
       </div>
+
       <div className="col-span-2">
         <div className="text-3xl font-bold"> Transactions </div>
         <Spacer y={4} />
@@ -148,9 +140,9 @@ const Page = () => {
               <TableColumn key={column.key}>{column.label}</TableColumn>
             )}
           </TableHeader>
-          <TableBody items={rows}>
+          <TableBody items={bids}>
             {(item) => (
-              <TableRow key={item.key}>
+              <TableRow key={uuidv4()}>
                 {(columnKey) => (
                   <TableCell>{getKeyValue(item, columnKey)}</TableCell>
                 )}
