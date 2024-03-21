@@ -29,7 +29,6 @@ import {
   UserRound,
   Lock,
   Mail,
-  CircleCheck,
   ContactRound,
 } from "lucide-react";
 import useSWR from "swr";
@@ -114,7 +113,7 @@ const users = () => {
   const formattedUsers = useMemo(() => {
     if (!data || !data.users) return [];
 
-    return data.users.map((user) => {
+    return data.users.map((user: any) => {
       const formattedBirthday =
         user.birthday === "0001-01-01T00:00:00"
           ? null
@@ -142,7 +141,7 @@ const users = () => {
     { label: "Administrator", value: "Administrator" },
   ];
 
-  const handleRoleChange = (events) => {
+  const handleRoleChange = (events: any) => {
     createFormik.setFieldValue("role", events.target.value);
   };
 
@@ -380,7 +379,7 @@ const users = () => {
         onRowAction={(key) => router.push("/management/users/" + key)}
         aria-label="User Table"
         bottomContent={
-          pages > 0 ? (
+          pages > 1 ? (
             <div className="flex w-full justify-center">
               <Pagination
                 isCompact

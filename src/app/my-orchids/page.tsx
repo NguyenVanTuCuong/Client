@@ -26,7 +26,6 @@ import { UserRound } from "lucide-react";
 
 const fetcher = async (key: string) => {
   const response = await axios.get(key);
-  console.log(response.data);
   return response.data;
 };
 
@@ -65,6 +64,7 @@ const myOrchids = () => {
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  console.log(data);
 
   return (
     <div>
