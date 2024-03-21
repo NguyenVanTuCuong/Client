@@ -17,6 +17,7 @@ import { AuctionContract } from "@/blockchain/auction";
 
 interface BidModalProps {
   address: string;
+  isDisabled: boolean;
 }
 
 export const BidModal = (props: BidModalProps) => {
@@ -33,7 +34,7 @@ export const BidModal = (props: BidModalProps) => {
   };
   return (
     <>
-      <Button color="primary" onPress={onOpen} fullWidth startContent={<HammerIcon size={20} strokeWidth={3/2}/>}> Bid </Button>
+      <Button isDisabled={props.isDisabled} color="primary" onPress={onOpen} fullWidth startContent={<HammerIcon size={20} strokeWidth={3/2}/>}> Bid </Button>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
         <ModalContent>
           {(onClose) => (

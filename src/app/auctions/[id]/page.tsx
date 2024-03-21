@@ -9,6 +9,7 @@ import {
   Button,
   Card,
   CardBody,
+  CardHeader,
   Image,
   Spacer,
   Table,
@@ -23,6 +24,7 @@ import { v4 as uuidv4 } from "uuid"
 import Web3, { WebSocketProvider } from "web3";
 import { HammerIcon } from "lucide-react";
 import { BidModal } from "./BidModal";
+import dayjs from "dayjs";
 
 const Page = () => {
   const params = useParams();
@@ -51,8 +53,8 @@ const Page = () => {
 
   interface Bid {
         bidder: string;
-        amount: BigInt;
-        timestamp: BigInt;
+        amount: bigint;
+        timestamp: bigint;
   }
 
   const [bids, setBids] = useState<Array<Bid>>([])
@@ -106,25 +108,35 @@ const Page = () => {
   return (
     <div className="max-w-[1024px] m-auto gap-12 grid grid-cols-3 w-full mt-6">
       <div>
-        <Image src={auction?.info.imageUrl} />
-        <Spacer y={6} />
-        <div className="text-3xl font-bold"> {auction?.info.name} </div>
-        <div className="text-xl text-foreground-500">
-          {auction?.info.description}
-        </div>
+        <Card>
+          <CardHeader className="p-0">
+          <Image src={auction?.info.imageUrl} className="rounded-b-none"/>
+          </CardHeader>
+          <CardBody className="p-4">
+          <div className="text-3xl font-bold"> {auction?.info.name} #{auction?.tokenId} </div>
+          <div className="flex gap-2">Description: {auction?.info.description} </div>
+          <div className="flex gap-2">Color: {auction?.info.color} </div>
+          <div className="flex gap-2">Species: {auction?.info.species} </div>
+          {
+            auction?.isTerminated ?
+            <div className="text-danger">Terminated </div>
+            : null
+          }
+         
+        </CardBody>
+        </Card>
         <Spacer y={12} />
         <div> Initital Amount: {auction?.initialAmount} KLAY </div>
         <div> Current Price: {auction?.currentAmount} KLAY </div>
         <Spacer y={4} />
-        <BidModal address={address} />
+        <BidModal isDisabled={auction?.isTerminated ?? false} address={address} />
         <Spacer y={2} />
         {
             isOwned ? (
-                <Button fullWidth onPress={() => {
+                <Button fullWidth isDisabled={auction?.isTerminated} onPress={
                     async () => {
                         const contract = new AuctionContract(address, provider, account);
                         await contract.endAuction()
-                    }
                 }}> End auction </Button>
             ) : null
         }
@@ -143,9 +155,13 @@ const Page = () => {
           <TableBody items={bids}>
             {(item) => (
               <TableRow key={uuidv4()}>
-                {(columnKey) => (
-                  <TableCell>{getKeyValue(item, columnKey)}</TableCell>
-                )}
+                  <TableCell>{`${item.bidder.slice(0, 4)}...${item.bidder.slice(-2)}`}</TableCell>
+                  <TableCell>
+                    {`${(Number((item.amount * BigInt(100000)) / BigInt(10e17)) / 100000).toString()} KLAY`}
+                    </TableCell>
+                    <TableCell>
+                    {dayjs(Number(item.timestamp) * 1000).format("DD/MM/YYYY HH:mm:ss")}
+                    </TableCell>
               </TableRow>
             )}
           </TableBody>

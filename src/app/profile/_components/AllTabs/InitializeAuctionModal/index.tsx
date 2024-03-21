@@ -33,7 +33,7 @@ export const InitializeAuctionModal = (props: InitializeAuctionModalProps) => {
   };
   return (
     <>
-      <Button onPress={onOpen} color="primary">Initialze Auction</Button>
+      <Button fullWidth onPress={onOpen} color="primary">Initialze Auction</Button>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
         <ModalContent>
           {(onClose) => (

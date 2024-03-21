@@ -8,6 +8,8 @@ export interface NFT {
     imageUrl: string,
     name: string,
     description: string,
+    color: string;
+    species: string;
 }
 
 export class NftContract {
@@ -33,30 +35,40 @@ export class NftContract {
             tokenId: i,
                 name: data.name,
                 description: data.description,
-                imageUrl: `https://ipfs.io/ipfs/${data.imageCid}`
-        }
+                imageUrl: `https://ipfs.io/ipfs/${data.imageCid}`,
+                color: data.color,
+                species: data.species
+            }
     }
 
     async getAllNfts(): Promise<NFT[]> {
         const results: NFT[] = []
         const tokenIdNext = await this.contract.methods.tokenIdNext().call()
+        console.log(tokenIdNext)
         if (Number(tokenIdNext) === 0) return []
         const promises: Array<Promise<void>> = []
         for (let i = 0; i < Number(tokenIdNext); i++) {
             promises.push(
                 (async () => {
-                    const owner = await this.contract.methods.ownerOf(BigInt(i)).call()
-                    if (Web3.utils.toChecksumAddress(owner) !== Web3.utils.toChecksumAddress(this.account ?? "")) return
-                    const cid = await this.contract.methods._tokenURIs(BigInt(i)).call()
-                    const data = (await axios.get(`https://ipfs.io/ipfs/${cid}`)).data
-                    results.push(
-                        {
-                            tokenId: BigInt(i),
-                            name: data.name,
-                            description: data.description,
-                            imageUrl: `https://ipfs.io/ipfs/${data.imageCid}`
-                        }
-                    )
+                    try{
+                        const owner = await this.contract.methods.ownerOf(BigInt(i)).call()
+                        if (Web3.utils.toChecksumAddress(owner) !== Web3.utils.toChecksumAddress(this.account ?? "")) return
+                        const cid = await this.contract.methods._tokenURIs(BigInt(i)).call()
+                        const data = (await axios.get(`https://ipfs.io/ipfs/${cid}`)).data
+                        results.push(
+                            {
+                                tokenId: BigInt(i),
+                                name: data.name,
+                                description: data.description,
+                                imageUrl: `https://ipfs.io/ipfs/${data.imageCid}`,
+                                color: data.color,
+                                species: data.species
+                            }
+                        )
+                    } catch (ex) {
+                        
+                    }
+                   
                 })()
             )
         }
