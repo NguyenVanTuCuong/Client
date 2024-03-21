@@ -32,8 +32,8 @@ export const Navbar = () => {
           </Link>
         </NavbarItem>
         <NavbarItem isActive>
-          <Link onPress={() => router.push("nfts")} aria-current="page">
-            NFTs
+          <Link onPress={() => router.push("/auctions")} aria-current="page">
+            Auctions
           </Link>
         </NavbarItem>
         <NavbarItem>

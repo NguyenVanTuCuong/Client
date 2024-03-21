@@ -10,6 +10,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  Chip,
   Image,
   Spacer,
   Table,
@@ -19,8 +20,9 @@ import {
   TableHeader,
   TableRow,
   getKeyValue,
+  Link,
 } from "@nextui-org/react";
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4 } from "uuid";
 import Web3, { WebSocketProvider } from "web3";
 import { HammerIcon } from "lucide-react";
 import { BidModal } from "./BidModal";
@@ -34,7 +36,7 @@ const Page = () => {
 
   const { provider, account } = useSDK();
 
-  const [ isOwned, setIsOwned ] = useState(false);
+  const [isOwned, setIsOwned] = useState(false);
 
   const columns = [
     {
@@ -52,38 +54,35 @@ const Page = () => {
   ];
 
   interface Bid {
-        bidder: string;
-        amount: bigint;
-        timestamp: bigint;
+    bidder: string;
+    amount: bigint;
+    timestamp: bigint;
   }
 
-  const [bids, setBids] = useState<Array<Bid>>([])
-
+  const [bids, setBids] = useState<Array<Bid>>([]);
   useEffect(() => {
-    if (!account) return;
-    const intervalId = setInterval(async () => {
-        const contract = new AuctionContract(address, provider, account);
-        const bids = await contract.getAllBids()
-        const _mapped = bids.map(({amount, bidder, timestamp}) => ({
-            bidder,
-            amount: BigInt(amount),
-            timestamp: BigInt(timestamp)
-        }))
-        setBids(_mapped)
-    }, 2000);
-    return () => clearInterval(intervalId);
-  }, [account])
-
-  useEffect(() => {
-    if (!account) return;
-    const handleEffect = async () => {
+    const fetchData = async () => {
+      if (!account) return;
+  
       const contract = new AuctionContract(address, provider, account);
+      const bids = await contract.getAllBids();
+      const _mapped = bids.map(({ amount, bidder, timestamp }) => ({
+        bidder,
+        amount: BigInt(amount),
+        timestamp: BigInt(timestamp),
+      }));
+      setBids(_mapped);
+  
       const tokenId = Number(await contract.tokenId());
       const isTerminated = await contract.isTerminated();
       const initialAmount = await contract.initialAmount();
       const owner = await contract.owner();
-      console.log(owner)
-      if (Web3.utils.toChecksumAddress(owner) === Web3.utils.toChecksumAddress(account)) setIsOwned(true)
+      console.log(owner);
+      if (
+        Web3.utils.toChecksumAddress(owner) ===
+        Web3.utils.toChecksumAddress(account)
+      )
+        setIsOwned(true);
       const _initialAmount =
         Number((BigInt(initialAmount) * BigInt(100000)) / BigInt(10e17)) /
         100000;
@@ -102,51 +101,93 @@ const Page = () => {
         tokenId,
       });
     };
-    handleEffect();
+  
+    // Call the fetchData function immediately
+    fetchData();
+  
+    // Set up the interval to fetch data every 2 seconds
+    const intervalId = setInterval(fetchData, 2000);
+  
+    // Clean up the interval
+    return () => clearInterval(intervalId);
   }, [account]);
-
   return (
-    <div className="max-w-[1024px] m-auto gap-12 grid grid-cols-3 w-full mt-6">
+    <div className="max-w-[1024px] px-6 m-auto gap-12 grid grid-cols-3 w-full mt-6">
       <div>
-        <Card>
+        <Card shadow="none" className="border border-divider">
           <CardHeader className="p-0">
-          <Image src={auction?.info.imageUrl} className="rounded-b-none"/>
+            <Image
+              src={auction?.info.imageUrl}
+              classNames={{
+                wrapper:
+                  "aspect-video overflow-hidden place-content-center grid rounded-b-none",
+              }}
+            />
           </CardHeader>
           <CardBody className="p-4">
-          <div className="text-3xl font-bold"> {auction?.info.name} #{auction?.tokenId} </div>
-          <div className="flex gap-2">Description: {auction?.info.description} </div>
-          <div className="flex gap-2">Color: {auction?.info.color} </div>
-          <div className="flex gap-2">Species: {auction?.info.species} </div>
-          {
-            auction?.isTerminated ?
-            <div className="text-danger">Terminated </div>
-            : null
-          }
-         
-        </CardBody>
+            <div className="text-lg font-bold">
+              {auction?.info.name} #{auction?.tokenId}
+            </div>
+            <div className="text-sm text-foreground-500">
+              {auction?.info.description}
+            </div>
+          </CardBody>
         </Card>
-        <Spacer y={12} />
-        <div> Initital Amount: {auction?.initialAmount} KLAY </div>
-        <div> Current Price: {auction?.currentAmount} KLAY </div>
-        <Spacer y={4} />
-        <BidModal isDisabled={auction?.isTerminated ?? false} address={address} />
+        <Spacer y={6} />
+        <div className="flex justify-between items-center">
+          <div>Initital amount: </div>
+          <Chip variant="flat">{auction?.initialAmount} KLAY </Chip>
+        </div>
         <Spacer y={2} />
-        {
-            isOwned ? (
-                <Button fullWidth isDisabled={auction?.isTerminated} onPress={
-                    async () => {
-                        const contract = new AuctionContract(address, provider, account);
-                        await contract.endAuction()
-                }}> End auction </Button>
-            ) : null
-        }
-       
+        <div className="flex justify-between items-center">
+          <div>Current amount: </div>
+          <Chip variant="flat"> {auction?.currentAmount} KLAY </Chip>
+        </div>
+        <Spacer y={6} />
+        {auction?.isTerminated ? (
+          <Button color="danger" isDisabled className="w-full"> Terminated </Button>
+        ) : (
+          <>
+            <BidModal
+              isDisabled={auction?.isTerminated ?? false}
+              address={address}
+            />
+            <Spacer y={2} />
+            {isOwned ? (
+              <Button
+                fullWidth
+                variant="light"
+                isDisabled={auction?.isTerminated}
+                onPress={async () => {
+                  const contract = new AuctionContract(
+                    address,
+                    provider,
+                    account
+                  );
+                  await contract.endAuction();
+                }}
+              >
+                End auction
+              </Button>
+            ) : null}
+          </>
+        )}
       </div>
 
       <div className="col-span-2">
-        <div className="text-3xl font-bold"> Transactions </div>
+        <div className="flex justify-between items-center">
+          <div className="text-3xl font-semibold"> Transactions </div>
+          <Link
+            size="sm"
+            href={`https://baobab.klaytnscope.com/account/${address}`}
+            showAnchorIcon
+          >
+            View on chain
+          </Link>
+        </div>
+
         <Spacer y={4} />
-        <Table aria-label="Example table with dynamic content">
+        <Table removeWrapper aria-label="Example table with dynamic content">
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn key={column.key}>{column.label}</TableColumn>
@@ -155,13 +196,20 @@ const Page = () => {
           <TableBody items={bids}>
             {(item) => (
               <TableRow key={uuidv4()}>
-                  <TableCell>{`${item.bidder.slice(0, 4)}...${item.bidder.slice(-2)}`}</TableCell>
-                  <TableCell>
-                    {`${(Number((item.amount * BigInt(100000)) / BigInt(10e17)) / 100000).toString()} KLAY`}
-                    </TableCell>
-                    <TableCell>
-                    {dayjs(Number(item.timestamp) * 1000).format("DD/MM/YYYY HH:mm:ss")}
-                    </TableCell>
+                <TableCell>{`${item.bidder.slice(0, 4)}...${item.bidder.slice(
+                  -2
+                )}`}</TableCell>
+                <TableCell>
+                  {`${(
+                    Number((item.amount * BigInt(100000)) / BigInt(10e17)) /
+                    100000
+                  ).toString()} KLAY`}
+                </TableCell>
+                <TableCell>
+                  {dayjs(Number(item.timestamp) * 1000).format(
+                    "DD/MM/YYYY HH:mm:ss"
+                  )}
+                </TableCell>
               </TableRow>
             )}
           </TableBody>

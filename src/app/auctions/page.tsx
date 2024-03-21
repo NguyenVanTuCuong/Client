@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { FactoryContract, NFT } from "@/blockchain/factory";
 import {
   Card,
@@ -12,14 +12,15 @@ import {
   Switch,
   Button,
   Spacer,
+  Chip,
 } from "@nextui-org/react";
 import React, { useEffect, useState } from "react";
 import { InitializeAuctionModal } from "../profile/_components/AllTabs/InitializeAuctionModal";
 import { NftContract } from "@/blockchain/nft";
 import { useSDK } from "@metamask/sdk-react";
 import { AuctionContract } from "@/blockchain/auction";
-import { EyeIcon, SignpostIcon } from "lucide-react";
-import Web3, { WebSocketProvider } from "web3";
+import { EyeIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Aunction {
   address: string;
@@ -52,7 +53,6 @@ const Page = () => {
               100000;
             const nftContract = new NftContract(provider, account);
             const info = await nftContract.getNFTInfo(BigInt(tokenId));
-            if (isTerminated) return
             newAuctions.push({
               address,
               initialAmount: _initialAmount,
@@ -69,41 +69,66 @@ const Page = () => {
     handleEffect();
   }, [account]);
 
+  const router = useRouter()
+
   return (
     <div className="max-w-[1024px] w-full m-auto px-6">
-       <Spacer y={6}/>
-      <div className="text-3xl">
-        All Auctions
-      </div>
-      <Spacer y={6}/>
-      <div className="grid grid-cols-4 gap-4">
+      <Spacer y={6} />
+      <div className="text-3xl font-semibold">Auctions</div>
+      <Spacer y={6} />
+      <div className="grid grid-cols-3 gap-4">
         {auctions.map((auction, index) => (
-          <Card key={index}>
-            <CardHeader className="p-0">
-              <Image
-                className="rounded-b-none"
-                key={auction.tokenId.toString()}
-                src={auction.info.imageUrl}
-              />
-            </CardHeader>
+          <Card
+            isPressable
+            onPress={() => router.push(`/auctions/${auction.address}`)}
+            shadow="none"
+            className="!border !border-divider !shadow-none"
+            key={index}
+          >
             <CardBody className="p-4">
-              <Link
-                href={`https://baobab.klaytnscope.com/account/${auction.address}`}
-                color="foreground"
-                className="text-lg font-bold"
-              >{`${auction.address.slice(0, 4)}...${auction.address.slice(
-                -2
-              )}`}</Link>
-              <div className="text-sm text-foreground-500">
-                Initial Amount: {auction.initialAmount} KLAY
-              </div>
-              <div className="text-sm text-foreground-500">
-                Token Id: {auction.tokenId.toString()}
+              <div>
+                <Link
+                  href={`https://baobab.klaytnscope.com/account/${auction.address}`}
+                  color="foreground"
+                  showAnchorIcon
+                  className="font-bold text-2xl"
+                >{`${auction.address.slice(0, 4)}...${auction.address.slice(
+                  -2
+                )}`}</Link>
+                <Spacer y={6} />
+
+                <div className="flex items-center justify-between">
+                  <Image
+                    radius="full"
+                    className="w-12 h-12 min-w-12"
+                    src={auction.info.imageUrl}
+                  />
+                  <div>
+                    <div className="font-bold">{auction.info.name}</div>
+                    <div className="text-end">#{auction.tokenId}</div>
+                  </div>
+                </div>
+                <Spacer y={4} />
+                <div className="text-sm text-foreground-500 flex justify-between items-center">
+                  <div>Initial amount: </div>
+                  <Chip variant="flat">{auction.initialAmount} KLAY</Chip>
+                </div>
+                <Spacer y={2} />
+                <div className="text-sm text-foreground-500 flex justify-between items-center">
+                  <div>Current amount: </div>
+                  <Chip variant="flat">{auction.initialAmount} KLAY</Chip>
+                </div>
+
+                <Spacer y={6} />
+                {auction.isTerminated ? (
+                  <Chip color="danger">Terminated</Chip>
+                ) : (
+                  <Chip color="warning" variant="flat">
+                    In progress
+                  </Chip>
+                )}
               </div>
             </CardBody>
-            <CardFooter className="p-4 pt-2">
-                <Button fullWidth color="primary" startContent={<EyeIcon size={20} strokeWidth={3/2}/>}> Details </Button>
-            </CardFooter>
           </Card>
         ))}
       </div>
