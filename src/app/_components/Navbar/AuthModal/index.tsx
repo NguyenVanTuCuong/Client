@@ -24,10 +24,10 @@ import { useRouter } from "next/navigation";
 import { customAxios } from "@/utils/axios";
 import { RootContext } from "@/app/_hooks/RootProvider";
 import { Eye, EyeOff } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
 
 export const AuthModal = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
   const [selected, setSelected] = useState<string | number>("login");
   const router = useRouter();
 
@@ -45,27 +45,42 @@ export const AuthModal = () => {
       password: Yup.string().min(6, "At least 6 digits").required("Required"),
     }),
     onSubmit: async (values) => {
-      await customAxios.post(
-        `${process.env.NEXT_PUBLIC_API}auth/sign-in`,
-        values
-      );
-      await mutate();
+      try {
+        await customAxios.post(
+          `${process.env.NEXT_PUBLIC_API}auth/sign-in`,
+          values
+        );
+        toast.success("Login Successfully!");
+        await mutate();
+      } catch (ex) {
+        toast.error(ex as string);
+      }
     },
   });
 
   const signUpFormik = useFormik({
     initialValues: {
-      name: "",
       email: "",
+      username: "",
+      firstName: "",
+      lastName: "",
       password: "",
       confirmPassword: "",
     },
     validationSchema: Yup.object().shape({
-      name: Yup.string()
+      email: Yup.string().email("Invalid Email").required("Required"),
+      username: Yup.string()
         .min(2, "At least 2")
         .max(50, "Maximum 50")
         .required("Required"),
-      email: Yup.string().email("Invalid Email").required("Required"),
+      firstName: Yup.string()
+        .min(2, "At least 2")
+        .max(50, "Maximum 50")
+        .required("Required"),
+      lastName: Yup.string()
+        .min(2, "At least 2")
+        .max(50, "Maximum 50")
+        .required("Required"),
       password: Yup.string()
         .min(6, "At least 6 digits")
         .max(50, "Maximum 50")
@@ -75,12 +90,19 @@ export const AuthModal = () => {
         .required("Required"),
     }),
     onSubmit: async (values) => {
-      console.log(values);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API}auth/signin`,
-        JSON.stringify(values)
-      );
-      console.log(response.data);
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API}auth/sign-up`,
+          JSON.stringify(values)
+        );
+        if (response.status === 200) {
+          toast.success("Sign Up Successful!");
+        } else {
+          toast.error(response.data);
+        }
+      } catch (error) {
+        toast.error("An error occurred during signup.");
+      }
     },
   });
 
@@ -98,6 +120,7 @@ export const AuthModal = () => {
 
   return (
     <>
+      <ToastContainer />
       <Button onPress={onOpen} isIconOnly radius="full">
         <Avatar showFallback src="https://images.unsplash.com/broken" />
       </Button>
@@ -197,26 +220,6 @@ export const AuthModal = () => {
                     <Tab key="sign-up" title="Sign up">
                       <form className="flex flex-col gap-4">
                         <Input
-                          id="name"
-                          value={signUpFormik.values.name}
-                          onChange={signUpFormik.handleChange}
-                          onBlur={signUpFormik.handleBlur}
-                          isInvalid={
-                            !!(
-                              signUpFormik.touched.name &&
-                              signUpFormik.errors.name
-                            )
-                          }
-                          errorMessage={
-                            signUpFormik.touched.name &&
-                            signUpFormik.errors.name
-                          }
-                          isRequired
-                          label="Name"
-                          placeholder="Enter your name"
-                          type="text"
-                        />
-                        <Input
                           id="email"
                           value={signUpFormik.values.email}
                           onChange={signUpFormik.handleChange}
@@ -235,6 +238,66 @@ export const AuthModal = () => {
                           label="Email"
                           placeholder="Enter your email"
                           type="email"
+                        />
+                        <Input
+                          id="username"
+                          value={signUpFormik.values.username}
+                          onChange={signUpFormik.handleChange}
+                          onBlur={signUpFormik.handleBlur}
+                          isInvalid={
+                            !!(
+                              signUpFormik.touched.username &&
+                              signUpFormik.errors.username
+                            )
+                          }
+                          errorMessage={
+                            signUpFormik.touched.username &&
+                            signUpFormik.errors.username
+                          }
+                          isRequired
+                          label="Username"
+                          placeholder="Enter your name"
+                          type="text"
+                        />
+                        <Input
+                          id="firstName"
+                          value={signUpFormik.values.firstName}
+                          onChange={signUpFormik.handleChange}
+                          onBlur={signUpFormik.handleBlur}
+                          isInvalid={
+                            !!(
+                              signUpFormik.touched.firstName &&
+                              signUpFormik.errors.firstName
+                            )
+                          }
+                          errorMessage={
+                            signUpFormik.touched.firstName &&
+                            signUpFormik.errors.firstName
+                          }
+                          isRequired
+                          label="First Name"
+                          placeholder="Enter your first name"
+                          type="text"
+                        />
+                        <Input
+                          id="lastName"
+                          value={signUpFormik.values.lastName}
+                          onChange={signUpFormik.handleChange}
+                          onBlur={signUpFormik.handleBlur}
+                          isInvalid={
+                            !!(
+                              signUpFormik.touched.lastName &&
+                              signUpFormik.errors.lastName
+                            )
+                          }
+                          errorMessage={
+                            signUpFormik.touched.lastName &&
+                            signUpFormik.errors.lastName
+                          }
+                          isRequired
+                          label="Last Name"
+                          placeholder="Enter your last name"
+                          type="text"
                         />
                         <Input
                           id="password"
@@ -315,7 +378,7 @@ export const AuthModal = () => {
                           </Link>
                         </p>
                         <div className="flex gap-2 justify-end">
-                          <Button fullWidth color="primary">
+                          <Button fullWidth color="primary" type="submit">
                             Sign up
                           </Button>
                         </div>
