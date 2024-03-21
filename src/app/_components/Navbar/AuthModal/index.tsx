@@ -23,6 +23,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { customAxios } from "@/utils/axios";
 import { RootContext } from "@/app/_hooks/RootProvider";
+import { Eye, EyeOff } from "lucide-react";
 
 export const AuthModal = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -30,9 +31,9 @@ export const AuthModal = () => {
   const [selected, setSelected] = useState<string | number>("login");
   const router = useRouter();
 
-  const { swrs } = useContext(RootContext)!
-  const { profileSwr } = swrs
-  const { mutate } = profileSwr
+  const { swrs } = useContext(RootContext)!;
+  const { profileSwr } = swrs;
+  const { mutate } = profileSwr;
 
   const signInFormik = useFormik({
     initialValues: {
@@ -47,8 +48,8 @@ export const AuthModal = () => {
       await customAxios.post(
         `${process.env.NEXT_PUBLIC_API}auth/sign-in`,
         values
-      )
-      await mutate()
+      );
+      await mutate();
     },
   });
 
@@ -65,7 +66,10 @@ export const AuthModal = () => {
         .max(50, "Maximum 50")
         .required("Required"),
       email: Yup.string().email("Invalid Email").required("Required"),
-      password: Yup.string().min(6, "At least 6 digits").required("Required"),
+      password: Yup.string()
+        .min(6, "At least 6 digits")
+        .max(50, "Maximum 50")
+        .required("Required"),
       confirmPassword: Yup.string()
         .oneOf([Yup.ref("password"), ""], "Passwords must match" as const)
         .required("Required"),
@@ -79,6 +83,18 @@ export const AuthModal = () => {
       console.log(response.data);
     },
   });
+
+  const [isVisibleSignInPassword, setIsVisibleSignInPassword] = useState(false);
+  const [isVisibleSignUpPassword, setIsVisibleSignUpPassword] = useState(false);
+  const [isVisibleSignUpConfirmPass, setIsVisibleSignUpConfirmPass] =
+    useState(false);
+
+  const toggleVisibilitySignInPassword = () =>
+    setIsVisibleSignInPassword(!isVisibleSignInPassword);
+  const toggleVisibilitySignUpPassword = () =>
+    setIsVisibleSignUpPassword(!isVisibleSignUpPassword);
+  const toggleVisibilitySignUpConfirmPass = () =>
+    setIsVisibleSignUpConfirmPass(!isVisibleSignUpConfirmPass);
 
   return (
     <>
@@ -146,7 +162,20 @@ export const AuthModal = () => {
                           isRequired
                           label="Password"
                           placeholder="Enter your password"
-                          type="password"
+                          endContent={
+                            <button
+                              className="focus"
+                              type="button"
+                              onClick={toggleVisibilitySignInPassword}
+                            >
+                              {isVisibleSignInPassword ? (
+                                <Eye className="text-2xl text-default-500 pointer-events-none" />
+                              ) : (
+                                <EyeOff className="text-2xl text-default-500 pointer-events-none" />
+                              )}
+                            </button>
+                          }
+                          type={isVisibleSignInPassword ? "text" : "password"}
                         />
                         <p className="text-center text-small">
                           Need to create an account?{" "}
@@ -225,7 +254,20 @@ export const AuthModal = () => {
                           isRequired
                           label="Password"
                           placeholder="Enter your password"
-                          type="password"
+                          endContent={
+                            <button
+                              className="focus"
+                              type="button"
+                              onClick={toggleVisibilitySignUpPassword}
+                            >
+                              {isVisibleSignUpPassword ? (
+                                <Eye className="text-2xl text-default-500 pointer-events-none" />
+                              ) : (
+                                <EyeOff className="text-2xl text-default-500 pointer-events-none" />
+                              )}
+                            </button>
+                          }
+                          type={isVisibleSignUpPassword ? "text" : "password"}
                         />
                         <Input
                           id="confirmPassword"
@@ -245,7 +287,22 @@ export const AuthModal = () => {
                           isRequired
                           label="Confirm Password"
                           placeholder="Enter your password"
-                          type="password"
+                          endContent={
+                            <button
+                              className="focus"
+                              type="button"
+                              onClick={toggleVisibilitySignUpConfirmPass}
+                            >
+                              {isVisibleSignUpConfirmPass ? (
+                                <Eye className="text-2xl text-default-500 pointer-events-none" />
+                              ) : (
+                                <EyeOff className="text-2xl text-default-500 pointer-events-none" />
+                              )}
+                            </button>
+                          }
+                          type={
+                            isVisibleSignUpConfirmPass ? "text" : "password"
+                          }
                         />
                         <p className="text-center text-small">
                           Already have an account?{" "}
