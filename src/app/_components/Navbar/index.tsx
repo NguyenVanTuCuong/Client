@@ -37,8 +37,8 @@ export const Navbar = () => {
           </Link>
         </NavbarItem>
         <NavbarItem>
-          <Link color="foreground" href="#">
-            Orchids
+          <Link color="foreground" href="/management/requests">
+            Management
           </Link>
         </NavbarItem>
       </NavbarContent>
