@@ -14,7 +14,6 @@ import {
   Tab,
   Tabs,
 } from "@nextui-org/react";
-import Image from "next/image";
 import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -25,9 +24,10 @@ import { customAxios } from "@/utils/axios";
 import { RootContext } from "@/app/_hooks/RootProvider";
 import { Eye, EyeOff } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/ReactToastify.css"
 
 export const AuthModal = () => {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [selected, setSelected] = useState<string | number>("login");
   const router = useRouter();
 
@@ -52,6 +52,7 @@ export const AuthModal = () => {
         );
         toast.success("Login Successfully!");
         await mutate();
+        onClose()
       } catch (ex) {
         toast.error(ex as string);
       }
@@ -91,15 +92,12 @@ export const AuthModal = () => {
     }),
     onSubmit: async (values) => {
       try {
-        const response = await axios.post(
+        await axios.post(
           `${process.env.NEXT_PUBLIC_API}auth/sign-up`,
-          JSON.stringify(values)
+          values
         );
-        if (response.status === 200) {
-          toast.success("Sign Up Successful!");
-        } else {
-          toast.error(response.data);
-        }
+        toast.success("Sign Up Successful!");
+        onClose()
       } catch (error) {
         toast.error("An error occurred during signup.");
       }
@@ -124,7 +122,7 @@ export const AuthModal = () => {
       <Button onPress={onOpen} isIconOnly radius="full">
         <Avatar showFallback src="https://images.unsplash.com/broken" />
       </Button>
-      <Modal size="sm" isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal size="sm" isOpen={isOpen} onClose={onClose} onOpenChange={onOpenChange}>
         <ModalContent>
           {(onClose) => (
             <>
@@ -218,7 +216,8 @@ export const AuthModal = () => {
                       </form>
                     </Tab>
                     <Tab key="sign-up" title="Sign up">
-                      <form className="flex flex-col gap-4">
+                      <form className="flex flex-col gap-4"  onSubmit={signUpFormik.handleSubmit}
+                        onReset={signUpFormik.handleReset}>
                         <Input
                           id="email"
                           value={signUpFormik.values.email}

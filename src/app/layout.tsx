@@ -6,6 +6,7 @@ import { Navbar } from "./_components";
 import { RootProvider } from "./_hooks/RootProvider";
 import { MetaMaskProvider } from "@metamask/sdk-react";
 
+
 const inter = Inter({ subsets: ["latin"] });
 
 const Layout = ({

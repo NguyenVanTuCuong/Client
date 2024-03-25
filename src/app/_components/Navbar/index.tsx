@@ -23,7 +23,7 @@ export const Navbar = () => {
   return (
     <NextUINavbar>
       <NavbarBrand>
-        <p className="font-bold text-inherit">ACME</p>
+        <p className="font-bold text-inherit">Orchid Auction</p>
       </NavbarBrand>
       <NavbarContent className="hidden sm:flex gap-4" justify="center">
         <NavbarItem>
