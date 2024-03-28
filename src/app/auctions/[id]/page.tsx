@@ -171,6 +171,7 @@ const Page = () => {
               <BidModal
                 isDisabled={auction?.isTerminated ?? false}
                 address={address}
+                orchidId={auction?.info.orchidId as string}
               />
             )}
           </>

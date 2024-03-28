@@ -4,6 +4,7 @@ import axios from "axios"
 import { GAS_LIMIT, GAS_PRICE } from "@/utils/const"
 
 export interface NFT {
+    orchidId: string;
     tokenId: BigInt,
     imageUrl: string,
     name: string,
@@ -37,7 +38,8 @@ export class NftContract {
                 description: data.description,
                 imageUrl: `https://ipfs.io/ipfs/${data.imageCid}`,
                 color: data.color,
-                species: data.species
+                species: data.species,
+                orchidId: data.orchidId
             }
     }
 
@@ -62,7 +64,8 @@ export class NftContract {
                                 description: data.description,
                                 imageUrl: `https://ipfs.io/ipfs/${data.imageCid}`,
                                 color: data.color,
-                                species: data.species
+                                species: data.species,
+                                orchidId: data.orchidId
                             }
                         )
                     } catch (ex) {

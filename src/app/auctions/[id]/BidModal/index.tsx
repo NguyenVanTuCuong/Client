@@ -14,10 +14,13 @@ import { useSDK } from "@metamask/sdk-react";
 import { FactoryContract } from "@/blockchain/factory";
 import { HammerIcon } from "lucide-react";
 import { AuctionContract } from "@/blockchain/auction";
+import { customAxios } from "@/utils/axios";
+import { Address } from "web3";
 
 interface BidModalProps {
   address: string;
   isDisabled: boolean;
+  orchidId: Address
 }
 
 export const BidModal = (props: BidModalProps) => {
@@ -26,13 +29,19 @@ export const BidModal = (props: BidModalProps) => {
   const { provider, account } = useSDK();
 
   const [amount, setAmount] = useState(0);
-  const { address } = props;
+  const { address, orchidId } = props;
 
   const onPress = async () => {
     const nftContract = new AuctionContract(address, provider, account);
     const transaction = await nftContract.bid(BigInt(amount * 10e17));
     //transaction.transactionHash
     
+    await customAxios.post(`${process.env.NEXT_PUBLIC_API}transaction`, {
+      transactionHash: transaction.transactionHash,
+      amount,
+      orchidId
+    })
+
     onClose()
   };
   return (
