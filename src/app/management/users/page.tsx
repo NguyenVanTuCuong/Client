@@ -63,7 +63,45 @@ const users = () => {
   }, [data?.pages, top]);
 
   const loadingState = isLoading || data?.pages === 0 ? "loading" : "idle";
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const {
+    isOpen: isOpenDetailModal,
+    onOpen: onOpenDetailModal,
+    onClose: onCloseDetailModal,
+    onOpenChange: onOpenChangeDetailModal,
+  } = useDisclosure();
+
+  const [isOpenDetail, setIsOpenDetail] = useState(false);
+
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const handleRowClick = (userId: any) => {
+    setSelectedUserId(userId);
+    setIsOpenDetail(true);
+    onOpenDetailModal();
+    console.log(userId);
+  };
+  const { data: user, error } = useSWR(
+    isOpenDetail && selectedUserId
+      ? `${process.env.NEXT_PUBLIC_API}user/${selectedUserId}`
+      : null,
+    fetcher,
+    {
+      keepPreviousData: true,
+    }
+  );
+
+  const {
+    isOpen: isOpenCreateModal,
+    onOpen: onOpenCreateModal,
+    onClose: onCloseCreateModal,
+    onOpenChange: onOpenChangeCreateModal,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenEditModal,
+    onOpen: onOpenEditModal,
+    onClose: onCloseEditModal,
+    onOpenChange: onOpenChangeEditModal,
+  } = useDisclosure();
+
   const createFormik = useFormik({
     initialValues: {
       email: "",
@@ -123,7 +161,7 @@ const users = () => {
     });
   }, [data]);
 
-  const handleSearch = (query) => {
+  const handleSearch = (query: any) => {
     setSearchQuery(query);
     setPage(1);
   };
@@ -163,13 +201,17 @@ const users = () => {
             color="primary"
             className="m-5"
             endContent={<Plus />}
-            onPress={onOpen}
+            onPress={onOpenCreateModal}
           >
             Create
           </Button>
         </div>
       </div>
-      <Modal size="lg" isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal
+        size="lg"
+        isOpen={isOpenCreateModal}
+        onOpenChange={onOpenChangeCreateModal}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -361,7 +403,7 @@ const users = () => {
                         type="submit"
                         fullWidth
                         color="primary"
-                        onPress={onClose}
+                        onPress={onCloseCreateModal}
                       >
                         Create
                       </Button>
@@ -376,7 +418,7 @@ const users = () => {
       <Table
         className="px-10"
         selectionMode="single"
-        onRowAction={(key) => router.push("/management/users/" + key)}
+        onRowAction={(key) => handleRowClick(key)}
         aria-label="User Table"
         bottomContent={
           pages > 1 ? (
@@ -422,6 +464,37 @@ const users = () => {
           )}
         </TableBody>
       </Table>
+      <Modal
+        isOpen={isOpenDetailModal}
+        onOpenChange={onOpenChangeDetailModal}
+        onClose={onCloseDetailModal}
+      >
+        <ModalContent>
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            <>
+              <ModalHeader>
+                <div className="flex flex-col px-3">Detail User</div>
+              </ModalHeader>
+              <ModalBody>
+                <div>Email: {user?.Email}</div>
+                <div>Username: {user?.username}</div>
+                <div>First Name: {user?.firstName}</div>
+                <div>Last Name: {user?.lastName}</div>
+                <div>
+                  Birthday:{" "}
+                  {user?.birthday === "0001-01-01T00:00:00"
+                    ? "Not Provided"
+                    : new Date(user?.birthday).toLocaleDateString("en-GB")}
+                </div>
+                <div>Status: {user?.status}</div>
+                <div>Role: {user?.role}</div>
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

@@ -22,9 +22,9 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { customAxios } from "@/utils/axios";
 import { RootContext } from "@/app/_hooks/RootProvider";
-import { Eye, EyeOff } from "lucide-react";
+import { ContactRound, Eye, EyeOff, Lock, Mail, UserRound } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/ReactToastify.css"
+import "react-toastify/ReactToastify.css";
 
 export const AuthModal = () => {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -52,7 +52,7 @@ export const AuthModal = () => {
         );
         toast.success("Login Successfully!");
         await mutate();
-        onClose()
+        onClose();
       } catch (ex) {
         toast.error(ex as string);
       }
@@ -92,12 +92,9 @@ export const AuthModal = () => {
     }),
     onSubmit: async (values) => {
       try {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API}auth/sign-up`,
-          values
-        );
+        await axios.post(`${process.env.NEXT_PUBLIC_API}auth/sign-up`, values);
         toast.success("Sign Up Successful!");
-        onClose()
+        setSelected("login");
       } catch (error) {
         toast.error("An error occurred during signup.");
       }
@@ -122,7 +119,12 @@ export const AuthModal = () => {
       <Button onPress={onOpen} isIconOnly radius="full">
         <Avatar showFallback src="https://images.unsplash.com/broken" />
       </Button>
-      <Modal size="sm" isOpen={isOpen} onClose={onClose} onOpenChange={onOpenChange}>
+      <Modal
+        size="sm"
+        isOpen={isOpen}
+        onClose={onClose}
+        onOpenChange={onOpenChange}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -146,8 +148,7 @@ export const AuthModal = () => {
                           value={signInFormik.values.email}
                           onChange={signInFormik.handleChange}
                           onBlur={signInFormik.handleBlur}
-                          //   endContent={
-                          //   }
+                          startContent={<Mail />}
                           isInvalid={
                             !!(
                               signInFormik.touched.email &&
@@ -168,8 +169,7 @@ export const AuthModal = () => {
                           value={signInFormik.values.password}
                           onChange={signInFormik.handleChange}
                           onBlur={signInFormik.handleBlur}
-                          //   endContent={
-                          //   }
+                          startContent={<Lock />}
                           isInvalid={
                             !!(
                               signInFormik.touched.password &&
@@ -216,13 +216,17 @@ export const AuthModal = () => {
                       </form>
                     </Tab>
                     <Tab key="sign-up" title="Sign up">
-                      <form className="flex flex-col gap-4"  onSubmit={signUpFormik.handleSubmit}
-                        onReset={signUpFormik.handleReset}>
+                      <form
+                        className="flex flex-col gap-4"
+                        onSubmit={signUpFormik.handleSubmit}
+                        onReset={signUpFormik.handleReset}
+                      >
                         <Input
                           id="email"
                           value={signUpFormik.values.email}
                           onChange={signUpFormik.handleChange}
                           onBlur={signUpFormik.handleBlur}
+                          startContent={<Mail />}
                           isInvalid={
                             !!(
                               signUpFormik.touched.email &&
@@ -243,6 +247,7 @@ export const AuthModal = () => {
                           value={signUpFormik.values.username}
                           onChange={signUpFormik.handleChange}
                           onBlur={signUpFormik.handleBlur}
+                          startContent={<UserRound />}
                           isInvalid={
                             !!(
                               signUpFormik.touched.username &&
@@ -263,6 +268,7 @@ export const AuthModal = () => {
                           value={signUpFormik.values.firstName}
                           onChange={signUpFormik.handleChange}
                           onBlur={signUpFormik.handleBlur}
+                          startContent={<ContactRound />}
                           isInvalid={
                             !!(
                               signUpFormik.touched.firstName &&
@@ -283,6 +289,7 @@ export const AuthModal = () => {
                           value={signUpFormik.values.lastName}
                           onChange={signUpFormik.handleChange}
                           onBlur={signUpFormik.handleBlur}
+                          startContent={<ContactRound />}
                           isInvalid={
                             !!(
                               signUpFormik.touched.lastName &&
@@ -303,6 +310,7 @@ export const AuthModal = () => {
                           value={signUpFormik.values.password}
                           onChange={signUpFormik.handleChange}
                           onBlur={signUpFormik.handleBlur}
+                          startContent={<Lock />}
                           isInvalid={
                             !!(
                               signUpFormik.touched.password &&
@@ -336,6 +344,7 @@ export const AuthModal = () => {
                           value={signUpFormik.values.confirmPassword}
                           onChange={signUpFormik.handleChange}
                           onBlur={signUpFormik.handleBlur}
+                          startContent={<Lock />}
                           isInvalid={
                             !!(
                               signUpFormik.touched.confirmPassword &&
