@@ -16,6 +16,7 @@ import useSWR from "swr";
 import axios from "axios";
 import { Search, Plus } from "lucide-react";
 import { ToastContainer } from "react-toastify";
+import { CreateAuchidModal } from "@/app/profile/_components/AllTabs/CreateAuchidModal";
 
 const fetcher = async (key: string) => {
   const response = await axios.get(key);

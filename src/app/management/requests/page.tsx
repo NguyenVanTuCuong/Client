@@ -168,7 +168,7 @@ const Page = () => {
                             requestStatus: "Approved",
                           }
                         );
-                        alert("You have approve this request and mint NFT");
+                        alert("You have approved this request and mint NFT");
                         setCount(count + 1);
                       }}
                       color="primary"

@@ -21,7 +21,7 @@ import { ResetContext } from "..";
 
 export const CreateAuchidModal = () => {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const { count, setCount } = useContext(ResetContext)!
+  const { count, setCount } = useContext(ResetContext)!;
 
   interface FormikValues {
     name: string;
@@ -58,8 +58,8 @@ export const CreateAuchidModal = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      onClose()
-      setCount(count + 1)
+      onClose();
+      setCount(count + 1);
     },
   });
 
@@ -72,7 +72,9 @@ export const CreateAuchidModal = () => {
 
   return (
     <>
-      <Button onPress={onOpen} color="primary">Create</Button>
+      <Button onPress={onOpen} color="primary">
+        Create
+      </Button>
       <Modal size="3xl" isOpen={isOpen} onOpenChange={onOpenChange}>
         <form onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <ModalContent className="flex ">
@@ -162,9 +164,12 @@ export const CreateAuchidModal = () => {
                 />
               </div>
               <div className="flex flex-col justify-between items-end">
-                <FileDropzone imageFile={formik.values.imageFile} onDrop={onDrop}/>
+                <FileDropzone
+                  imageFile={formik.values.imageFile}
+                  onDrop={onDrop}
+                />
                 <div className="flex gap-2">
-                  <Button color="danger" variant="light">
+                  <Button color="danger" variant="light" onClick={onClose}>
                     Close
                   </Button>
                   <Button type="submit" color="primary">
