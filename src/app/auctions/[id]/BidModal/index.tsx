@@ -30,7 +30,9 @@ export const BidModal = (props: BidModalProps) => {
 
   const onPress = async () => {
     const nftContract = new AuctionContract(address, provider, account);
-    await nftContract.bid(BigInt(amount * 10e17));
+    const transaction = await nftContract.bid(BigInt(amount * 10e17));
+    //transaction.transactionHash
+    
     onClose()
   };
   return (

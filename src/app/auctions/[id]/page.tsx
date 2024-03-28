@@ -63,7 +63,7 @@ const Page = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!account) return;
-  
+
       const contract = new AuctionContract(address, provider, account);
       const bids = await contract.getAllBids();
       const _mapped = bids.map(({ amount, bidder, timestamp }) => ({
@@ -72,7 +72,7 @@ const Page = () => {
         timestamp: BigInt(timestamp),
       }));
       setBids(_mapped);
-  
+
       const tokenId = Number(await contract.tokenId());
       const isTerminated = await contract.isTerminated();
       const initialAmount = await contract.initialAmount();
@@ -101,13 +101,13 @@ const Page = () => {
         tokenId,
       });
     };
-  
+
     // Call the fetchData function immediately
     fetchData();
-  
+
     // Set up the interval to fetch data every 2 seconds
     const intervalId = setInterval(fetchData, 2000);
-  
+
     // Clean up the interval
     return () => clearInterval(intervalId);
   }, [account]);
@@ -145,18 +145,16 @@ const Page = () => {
         </div>
         <Spacer y={6} />
         {auction?.isTerminated ? (
-          <Button color="danger" isDisabled className="w-full"> Terminated </Button>
+          <Button color="danger" isDisabled className="w-full">
+            {" "}
+            Terminated{" "}
+          </Button>
         ) : (
           <>
-            <BidModal
-              isDisabled={auction?.isTerminated ?? false}
-              address={address}
-            />
-            <Spacer y={2} />
             {isOwned ? (
               <Button
                 fullWidth
-                variant="light"
+                color="primary"
                 isDisabled={auction?.isTerminated}
                 onPress={async () => {
                   const contract = new AuctionContract(
@@ -169,7 +167,12 @@ const Page = () => {
               >
                 End auction
               </Button>
-            ) : null}
+            ) : (
+              <BidModal
+                isDisabled={auction?.isTerminated ?? false}
+                address={address}
+              />
+            )}
           </>
         )}
       </div>
