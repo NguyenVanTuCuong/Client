@@ -41,7 +41,6 @@ const Page = () => {
   }, [data?.pages, top]);
 
   const loadingState = isLoading || data?.pages === 0 ? "loading" : "idle";
-  const router = useRouter();
 
   const renderChip = (item: any) => {
     if (item?.requestStatus === "Pending")
@@ -65,125 +64,131 @@ const Page = () => {
   };
 
   return (
-    <div className="px-6 max-w-[1024px] mx-auto mt-6">
-      <Table
-        removeWrapper
-        selectionMode="single"
-        onRowAction={(key) => router.push("/management/users/" + key)}
-        aria-label="User Table"
-        bottomContent={
-          pages > 1 ? (
-            <div className="flex w-full justify-center">
-              <Pagination
-                isCompact
-                showControls
-                showShadow
-                color="primary"
-                page={page}
-                total={pages}
-                onChange={(page) => setPage(page)}
-              />
-            </div>
-          ) : null
-        }
-      >
-        <TableHeader>
-          <TableColumn key="depositRequestId">Id</TableColumn>
-          <TableColumn key="name">Name</TableColumn>
-          <TableColumn key="address">Address</TableColumn>
-          <TableColumn key="date">Date</TableColumn>
-          <TableColumn key="image">Status</TableColumn>
-          <TableColumn key="actions">Actions</TableColumn>
-        </TableHeader>
-        <TableBody
-          items={data?.deposits ?? []}
-          loadingContent={<Spinner />}
-          loadingState={loadingState}
-        >
-          {(item: any) => (
-            <TableRow key={item?.depositRequestId}>
-              <TableCell>{`${item?.depositRequestId.slice(
-                0,
-                4
-              )}...${item?.depositRequestId.slice(-2)}`}</TableCell>
-              <TableCell>
-                <div className="flex gap-3 items-center">
-                  <Image
-                    src={item.orchid.imageUrl}
-                    classNames={{
-                      wrapper: "aspect-square w-20 min-w-20 overflow-hidden",
-                      img: "h-full",
-                    }}
+    <div className="flex flex-col flex-1">
+      <div className="flex flex-col gap-1 px-10 mt-6">
+        <div className="flex justify-center gap-1">
+          <Table
+            removeWrapper
+            selectionMode="single"
+            aria-label="User Table"
+            bottomContent={
+              pages > 1 ? (
+                <div className="flex w-full justify-center">
+                  <Pagination
+                    isCompact
+                    showControls
+                    showShadow
+                    color="primary"
+                    page={page}
+                    total={pages}
+                    onChange={(page) => setPage(page)}
                   />
-                  <div>
-                    <div className="text-bold"> {item.orchid.name} </div>
-                    <div className="text-foreground-500 text-sm">
-                      {item.orchid.description}
-                    </div>
-                  </div>
                 </div>
-              </TableCell>
-              <TableCell>
-                {item.walletAddress.slice(0, 4)}...
-                {item.walletAddress.slice(-2)}
-              </TableCell>
-              <TableCell>
-                {dayjs(item.createdAt).format("DD/MM/YYYY HH:mm:ss")}
-              </TableCell>
-              <TableCell>{renderChip(item)}</TableCell>
-              <TableCell>
-                {item.requestStatus === "Pending" ? (
-                  <div className="flex items-center">
-                    <Button
-                      onPress={async () => {
-                        await customAxios.put(
-                          `${process.env.NEXT_PUBLIC_API}deposit-request`,
-                          {
-                            depositRequestId: item.depositRequestId,
-                            requestStatus: "Rejected",
-                          }
-                        );
-                        alert("You have rejected this request");
-                        setCount(count + 1);
-                      }}
-                      color="primary"
-                      variant="light"
-                      isIconOnly
-                    >
-                      <XIcon size={20} strokeWidth={3 / 2} />
-                    </Button>
-                    <Button
-                      onPress={async () => {
-                        await customAxios.post(
-                          `${process.env.NEXT_PUBLIC_API}blockchain/deposit-for-nft`,
-                          {
-                            address: item.walletAddress,
-                            orchidId: item.orchidId,
-                          }
-                        );
-                        await customAxios.put(
-                          `${process.env.NEXT_PUBLIC_API}deposit-request`,
-                          {
-                            depositRequestId: item.depositRequestId,
-                            requestStatus: "Approved",
-                          }
-                        );
-                        alert("You have approved this request and mint NFT");
-                        setCount(count + 1);
-                      }}
-                      color="primary"
-                      variant="light"
-                      isIconOnly
-                    >
-                      <CheckIcon size={20} strokeWidth={3 / 2} />
-                    </Button>
-                  </div>
-                ) : null}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+              ) : null
+            }
+          >
+            <TableHeader>
+              <TableColumn key="depositRequestId">Id</TableColumn>
+              <TableColumn key="name">Name</TableColumn>
+              <TableColumn key="address">Address</TableColumn>
+              <TableColumn key="date">Date</TableColumn>
+              <TableColumn key="image">Status</TableColumn>
+              <TableColumn key="actions">Actions</TableColumn>
+            </TableHeader>
+            <TableBody
+              items={data?.deposits ?? []}
+              loadingContent={<Spinner />}
+              loadingState={loadingState}
+            >
+              {(item: any) => (
+                <TableRow key={item?.depositRequestId}>
+                  <TableCell>{`${item?.depositRequestId.slice(
+                    0,
+                    4
+                  )}...${item?.depositRequestId.slice(-2)}`}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-3 items-center">
+                      <Image
+                        src={item.orchid.imageUrl}
+                        classNames={{
+                          wrapper:
+                            "aspect-square w-20 min-w-20 overflow-hidden",
+                          img: "h-full",
+                        }}
+                      />
+                      <div>
+                        <div className="text-bold"> {item.orchid.name} </div>
+                        <div className="text-foreground-500 text-sm">
+                          {item.orchid.description}
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {item.walletAddress.slice(0, 4)}...
+                    {item.walletAddress.slice(-2)}
+                  </TableCell>
+                  <TableCell>
+                    {dayjs(item.createdAt).format("DD/MM/YYYY HH:mm:ss")}
+                  </TableCell>
+                  <TableCell>{renderChip(item)}</TableCell>
+                  <TableCell>
+                    {item.requestStatus === "Pending" ? (
+                      <div className="flex items-center">
+                        <Button
+                          onPress={async () => {
+                            await customAxios.put(
+                              `${process.env.NEXT_PUBLIC_API}deposit-request`,
+                              {
+                                depositRequestId: item.depositRequestId,
+                                requestStatus: "Rejected",
+                              }
+                            );
+                            alert("You have rejected this request");
+                            setCount(count + 1);
+                          }}
+                          color="primary"
+                          variant="light"
+                          isIconOnly
+                        >
+                          <XIcon size={20} strokeWidth={3 / 2} />
+                        </Button>
+                        <Button
+                          onPress={async () => {
+                            await customAxios.post(
+                              `${process.env.NEXT_PUBLIC_API}blockchain/deposit-for-nft`,
+                              {
+                                address: item.walletAddress,
+                                orchidId: item.orchidId,
+                              }
+                            );
+                            await customAxios.put(
+                              `${process.env.NEXT_PUBLIC_API}deposit-request`,
+                              {
+                                depositRequestId: item.depositRequestId,
+                                requestStatus: "Approved",
+                              }
+                            );
+                            alert(
+                              "You have approved this request and mint NFT"
+                            );
+                            setCount(count + 1);
+                          }}
+                          color="primary"
+                          variant="light"
+                          isIconOnly
+                        >
+                          <CheckIcon size={20} strokeWidth={3 / 2} />
+                        </Button>
+                      </div>
+                    ) : null}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 };
