@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Avatar,
+  Spacer,
 } from "@nextui-org/react";
 import React, { useContext, useRef } from "react";
 import { WalletModalRef, WalletModalRefSelectors } from "./WalletModalRef";
@@ -39,9 +40,11 @@ export const AuthenticatedSelect = () => {
           />
         </DropdownTrigger>
         <DropdownMenu aria-label="Static Actions">
-          <DropdownItem key="profile" className="h-14 gap-2">
-            <p className="font-semibold">Signed in as</p>
-            <p className="font-semibold">{data?.email}</p>
+          <DropdownItem key="profile" className="h-20 gap-2">
+            <div className="font-semibold">Signed in as</div>
+            <div className="font-semibold">{data?.email}</div>
+            <Spacer y={2}/>
+            <div> You are {data?.role}</div>
           </DropdownItem>
           <DropdownItem key="wallet" onPress={onOpen}>
             Wallet

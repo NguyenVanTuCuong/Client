@@ -36,11 +36,17 @@ export const Navbar = () => {
             Auctions
           </Link>
         </NavbarItem>
-        <NavbarItem>
+        {
+          data?.role === "Administrator" ?
+          <NavbarItem>
           <Link color="foreground" href="/management/requests">
             Management
           </Link>
         </NavbarItem>
+        : null 
+        }
+       
+
       </NavbarContent>
       <NavbarContent justify="end">
         <NavbarItem className="hidden lg:flex">

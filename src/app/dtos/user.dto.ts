@@ -8,17 +8,12 @@ export interface UserDto {
     walletAddress?: string | null;
     birthday?: string | null; // DateOnly in C# can be represented as string in TypeScript
     status: number;
-    role: UserRole;
+    role: string;
     orchids: Orchid[]; // Assuming Orchid is another DTO
 }
 
 export interface Orchid {
     // Define properties of the Orchid DTO
-}
-
-// Define UserRole enum
-export enum UserRole {
-    // Define enum values based on your C# enum
 }
 
 export interface OrchidDto {
