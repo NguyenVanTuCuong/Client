@@ -17,7 +17,6 @@ import { customAxios } from "@/utils/axios";
 import Dropzone from "react-dropzone";
 import { FileUpIcon, Plus } from "lucide-react";
 import { FileDropzone } from "./FileDropzone";
-import { ResetContext } from "..";
 
 export const CreateOrchidModal = () => {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();

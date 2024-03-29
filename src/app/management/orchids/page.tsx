@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -14,6 +14,7 @@ import {
   Pagination,
   Skeleton,
   Spinner,
+  Textarea,
   useDisclosure,
 } from "@nextui-org/react";
 import { customAxios } from "@/utils/axios";
@@ -22,6 +23,9 @@ import axios from "axios";
 import { Search, Plus } from "lucide-react";
 import { ToastContainer } from "react-toastify";
 import { CreateOrchidModal } from "./_components/CreateAuchidModal";
+import { useFormik } from "formik";
+import { FileDropzone } from "./_components/CreateAuchidModal/FileDropzone";
+import { ModalFooter } from "react-bootstrap";
 
 const fetcher = async (key: string) => {
   const response = await axios.get(key);
@@ -77,8 +81,6 @@ const orchids = () => {
     setSelectedOrchidId(orchidId);
     setIsOpenDetail(true);
     onOpenDetailModal();
-    console.log(orchidId);
-    console.log(orchidDetail.data);
   };
   const { data: orchidDetail, isLoading: isLoadingDetails } = useSWR(
     isOpenDetail && selectedOrchidId
@@ -90,12 +92,155 @@ const orchids = () => {
     }
   );
 
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+
+  interface FormikValues {
+    id: string;
+    name: string;
+    description: string;
+    color: string;
+    origin: string;
+    species: string;
+    imageFile: File | null;
+  }
+
+  const initialValues: FormikValues = {
+    id: "",
+    name: "",
+    description: "",
+    color: "",
+    origin: "",
+    species: "",
+    imageFile: null,
+  };
+
+  const formik = useFormik({
+    initialValues,
+    onSubmit: async (values) => {
+      try {
+        if (values.imageFile === null) return;
+        const formData = new FormData();
+        formData.append("OrchidId", values.id);
+        formData.append("Json.Description", values.description);
+        formData.append("Json.Name", values.name);
+        formData.append("Json.Color", values.color);
+        formData.append("Json.Origin", values.origin);
+        formData.append("Json.Species", values.species);
+        formData.append("ImageFile", values.imageFile);
+        await customAxios.put(
+          `${process.env.NEXT_PUBLIC_API}orchid`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        alert("Update Successfully!");
+        onClose();
+      } catch (ex) {
+        alert(ex as String);
+      }
+    },
+  });
+
+  const onDrop = useCallback(
+    (files: Array<File>) => {
+      formik.setFieldValue("imageFile", files.at(0));
+    },
+    [formik.values.imageFile]
+  );
+  const [isOpenEdit, setIsOpenEdit] = useState(false);
+  const handleEditClick = (orchidId: any) => {
+    setSelectedOrchidId(orchidId);
+    setIsOpenEdit(true);
+    onOpen();
+  };
+  const { data: orchidEdit, isLoading: isLoadingEdit } = useSWR(
+    isOpen && selectedOrchidId
+      ? `${process.env.NEXT_PUBLIC_API}orchid/${selectedOrchidId}`
+      : null,
+    fetcher,
+    {
+      keepPreviousData: true,
+    }
+  );
+
+  useEffect(() => {
+    if (orchidEdit) {
+      fetch(orchidEdit?.data.imageUrl)
+        .then((response) => response.blob())
+        .then((blob) => {
+          const file = new File([blob], "filename.jpg", { type: "image/jpeg" });
+          formik.setValues({
+            id: orchidEdit?.data.orchidId,
+            name: orchidEdit?.data.name,
+            description: orchidEdit?.data.description,
+            color: orchidEdit?.data.color,
+            origin: orchidEdit?.data.origin,
+            species: orchidEdit?.data.species,
+            imageFile: file,
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching the image:", error);
+        });
+    }
+  }, [orchidEdit]);
+
+  const {
+    isOpen: isOpenDelete,
+    onOpen: onOpenDelete,
+    onOpenChange: onOpenChangeDelete,
+    onClose: onCloseDelete,
+  } = useDisclosure();
+
+  const handleDeleteClick = (orchidId: any) => {
+    setSelectedOrchidId(orchidId);
+    onOpenDelete();
+  };
+
+  const confirmDelete = () => {
+    try {
+      const responseDelete = customAxios.delete(
+        `${process.env.NEXT_PUBLIC_API}orchid?orchidId=${selectedOrchidId}`
+      );
+      alert("Delete Successfully!");
+      onCloseDelete();
+    } catch (ex) {
+      alert(ex as string);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col flex-1">
         <div className="flex flex-col gap-1">
           <div className="flex justify-center gap-1">
             <ToastContainer />
+            {/* Delete */}
+            <Modal isOpen={isOpenDelete} onOpenChange={onOpenChangeDelete}>
+              <ModalContent>
+                {(onClose) => (
+                  <>
+                    <ModalHeader className="flex flex-col gap-1">
+                      Delete Orchid
+                    </ModalHeader>
+                    <ModalBody>
+                      <p>Are you sure you wanna delete this orchid?</p>
+                    </ModalBody>
+                    <ModalFooter className="flex flex-row gap-2 px-6 py-4 justify-end">
+                      <Button color="danger" variant="light" onPress={onClose}>
+                        Close
+                      </Button>
+                      <Button color="primary" onPress={confirmDelete}>
+                        Confirm
+                      </Button>
+                    </ModalFooter>
+                  </>
+                )}
+              </ModalContent>
+            </Modal>
             <Input
               isClearable
               className="w-full m-5 sm:max-w-[44%]"
@@ -144,15 +289,175 @@ const orchids = () => {
                       className="w-full object-cover h-[140px]"
                       src={item.imageUrl}
                     />
+                    <b className="text-center w-full">{item.name}</b>
                   </CardBody>
                   <CardFooter className="text-small justify-between">
-                    <b>{item.name}</b>
-                    <b>{item.color}</b>
-                    <p className="text-default-500">{item.depositedStatus}</p>
+                    <Button
+                      type="submit"
+                      color="primary"
+                      className="m-5"
+                      onPress={() => handleEditClick(item.orchidId)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="submit"
+                      color="danger"
+                      className="m-5"
+                      onPress={() => handleDeleteClick(item.orchidId)}
+                    >
+                      Delete
+                    </Button>
                   </CardFooter>
                 </Card>
               ))}
             </div>
+            {/* Update */}
+            <Modal size="3xl" isOpen={isOpen} onOpenChange={onOpenChange}>
+              <form onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+                <ModalContent className="flex ">
+                  {isLoadingEdit ? (
+                    <Spinner />
+                  ) : (
+                    <>
+                      <ModalHeader className="p-6 pb-0">
+                        Update Orchid
+                      </ModalHeader>
+                      <ModalBody className="p-6 grid grid-cols-2 gap-6">
+                        <div className="flex flex-col gap-4">
+                          <Input
+                            id="name"
+                            variant="bordered"
+                            classNames={{
+                              inputWrapper:
+                                "!border !border-divider shadow-none",
+                            }}
+                            label="Name"
+                            labelPlacement="outside"
+                            placeholder="Input name"
+                            onChange={formik.handleChange}
+                            value={formik.values.name}
+                            onBlur={formik.handleBlur}
+                            isInvalid={
+                              !!(formik.touched.name && formik.errors.name)
+                            }
+                            errorMessage={
+                              formik.touched.name && formik.errors.name
+                            }
+                          />
+                          <Textarea
+                            id="description"
+                            classNames={{
+                              inputWrapper:
+                                "!border !border-divider shadow-none",
+                            }}
+                            label="Description"
+                            labelPlacement="outside"
+                            variant="bordered"
+                            placeholder="Input description"
+                            onChange={formik.handleChange}
+                            value={formik.values.description}
+                            onBlur={formik.handleBlur}
+                            isInvalid={
+                              !!(
+                                formik.touched.description &&
+                                formik.errors.description
+                              )
+                            }
+                            errorMessage={
+                              formik.touched.description &&
+                              formik.errors.description
+                            }
+                          />
+                          <Input
+                            id="color"
+                            label="Color"
+                            classNames={{
+                              inputWrapper:
+                                "!border !border-divider shadow-none",
+                            }}
+                            labelPlacement="outside"
+                            variant="bordered"
+                            placeholder="Input color"
+                            onChange={formik.handleChange}
+                            value={formik.values.color}
+                            onBlur={formik.handleBlur}
+                            isInvalid={
+                              !!(formik.touched.color && formik.errors.color)
+                            }
+                            errorMessage={
+                              formik.touched.color && formik.errors.color
+                            }
+                          />
+                          <Input
+                            id="origin"
+                            label="Origin"
+                            classNames={{
+                              inputWrapper:
+                                "!border !border-divider shadow-none",
+                            }}
+                            labelPlacement="outside"
+                            variant="bordered"
+                            placeholder="Input origin"
+                            onChange={formik.handleChange}
+                            value={formik.values.origin}
+                            onBlur={formik.handleBlur}
+                            isInvalid={
+                              !!(formik.touched.origin && formik.errors.origin)
+                            }
+                            errorMessage={
+                              formik.touched.origin && formik.errors.origin
+                            }
+                          />
+                          <Input
+                            id="species"
+                            label="Species"
+                            classNames={{
+                              inputWrapper:
+                                "!border !border-divider shadow-none",
+                            }}
+                            labelPlacement="outside"
+                            variant="bordered"
+                            placeholder="Input species"
+                            onChange={formik.handleChange}
+                            value={formik.values.species}
+                            onBlur={formik.handleBlur}
+                            isInvalid={
+                              !!(
+                                formik.touched.species && formik.errors.species
+                              )
+                            }
+                            errorMessage={
+                              formik.touched.species && formik.errors.species
+                            }
+                          />
+                        </div>
+                        <div className="flex flex-col justify-between items-end">
+                          <FileDropzone
+                            imageFile={formik.values.imageFile}
+                            onDrop={onDrop}
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              color="danger"
+                              variant="light"
+                              onClick={onClose}
+                            >
+                              Close
+                            </Button>
+                            <Button type="submit" color="primary">
+                              Update
+                            </Button>
+                          </div>
+                        </div>
+                      </ModalBody>
+                    </>
+                  )}
+                </ModalContent>
+              </form>
+            </Modal>
+
+            {/* Detail */}
             <Modal
               isOpen={isOpenDetailModal}
               onOpenChange={onOpenChangeDetailModal}

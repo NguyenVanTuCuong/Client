@@ -273,7 +273,6 @@ const users = () => {
         role: userEdit?.role,
       });
     }
-    console.log(updateFormik.values);
   }, [userEdit]);
 
   const formattedUsers = useMemo(() => {
